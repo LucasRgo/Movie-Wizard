@@ -1,0 +1,19 @@
+.footer-link {
+    text-decoration: none;
+    color: white;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+}
+
+
+.footer-icon {
+    font-size: 1.2rem;
+    margin-right: 5px;
+    color: purple;
+}
+
+.footer-list-item {
+    padding: 2px;
+}
