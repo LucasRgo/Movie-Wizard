@@ -2,7 +2,7 @@ from .models import Rate
 from django.http import JsonResponse
 import requests
 
-API_KEY = "3d0fea0825fa3f64679db41d773d27eb"
+API_KEY = ""
 
 # Function to fetch movies from a specific page
 def fetch_movies(page, genre, vote_count):
