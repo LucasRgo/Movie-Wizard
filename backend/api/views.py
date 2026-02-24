@@ -8,16 +8,58 @@ from rest_framework import permissions, status
 from collections import Counter
 from .validations import custom_validation, validate_username, validate_password
 from django.http import JsonResponse
-from .utils import genre_movies, get_similar_movies
+from .utils import genre_movies, get_similar_movies, API_KEY
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, get_object_or_404
 from json import loads
 from statistics import mean
+from django.db import IntegrityError
+import requests
 
 
 
 WATCHED_MOVIES = [19404, 696374, 255709, 724089, 761053,644479,164558,
                   611291, 553512, 40096, 4935, 12477, 378064, 454983]
+
+
+def fetch_tmdb_movie(movie_id):
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}"
+    params = {
+        "api_key": API_KEY,
+        "language": "en-US",
+        "append_to_response": "credits",
+    }
+
+    try:
+        response = requests.get(url, params=params, timeout=8)
+    except requests.RequestException:
+        return None
+
+    if response.status_code != 200:
+        return None
+
+    payload = response.json()
+    crew = payload.get("credits", {}).get("crew", [])
+    director = next(
+        (member.get("name") for member in crew if member.get("job") == "Director" and member.get("name")),
+        "Unknown",
+    )
+
+    release_date = payload.get("release_date") or ""
+    year = int(release_date[:4]) if release_date[:4].isdigit() else 0
+
+    try:
+        return Movie.objects.create(
+            id=movie_id,
+            title=(payload.get("title") or "Untitled")[:255],
+            director=director[:255],
+            year=year,
+            rating=float(payload.get("vote_average") or 0),
+            synopsis=payload.get("overview") or "Synopsis unavailable.",
+            poster_url=payload.get("poster_path") or None,
+        )
+    except IntegrityError:
+        return Movie.objects.filter(id=movie_id).first()
 
 
 class UserLogin(APIView):
@@ -59,32 +101,33 @@ class UserView(APIView):
 
 class MovieDetail(APIView):
     def get(self, request, movie_id):
-        try:
-            is_in_watchlater = False
-            rating = 0
-            if request.user.is_authenticated:
-                user = User.objects.get(id=request.user.id)
-                movie = Movie.objects.get(id=movie_id)
-                is_in_watchlater = WatchLater.objects.filter(user=user, movie=movie).exists()
-                rate = Rate.objects.filter(user=user, movie=movie).first()
-                if rate:
-                    rating = rate.rating
+        movie = Movie.objects.filter(id=movie_id).first()
+        if movie is None:
+            movie = fetch_tmdb_movie(movie_id)
 
-            movie = Movie.objects.get(id=movie_id)
-            data = {
-                'id': movie.id,
-                'title': movie.title,
-                'year': movie.year,
-                'synopsis': movie.synopsis,
-                'director': movie.director,
-                'poster_url': movie.poster_url,
-                'is_in_watchlater': is_in_watchlater,
-                'user_rating': rating
-            }
-
-            return Response(data)
-        except Movie.DoesNotExist:
+        if movie is None:
             return Response({'error': 'Movie not found'}, status=404)
+
+        is_in_watchlater = False
+        rating = 0
+        if request.user.is_authenticated:
+            is_in_watchlater = WatchLater.objects.filter(user=request.user, movie=movie).exists()
+            rate = Rate.objects.filter(user=request.user, movie=movie).first()
+            if rate:
+                rating = rate.rating
+
+        data = {
+            'id': movie.id,
+            'title': movie.title,
+            'year': movie.year,
+            'synopsis': movie.synopsis,
+            'director': movie.director,
+            'poster_url': movie.poster_url,
+            'is_in_watchlater': is_in_watchlater,
+            'user_rating': rating
+        }
+
+        return Response(data)
 
 
 class UserRegister(APIView):
