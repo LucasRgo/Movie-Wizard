@@ -2,8 +2,19 @@ import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 
 const AuthContext = React.createContext();
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 
 const getCsrfToken = () => Cookies.get("csrftoken") || "";
+const getApiUrl = (path) => `${API_BASE_URL}${path}`;
+
+const parseJsonIfPossible = async (response) => {
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+        return null;
+    }
+
+    return response.json();
+};
 
 const AuthProvider = ({ children }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -13,9 +24,10 @@ const AuthProvider = ({ children }) => {
 
     const fetchCurrentUser = async () => {
         try {
-            const response = await fetch("/api/user/", {
+            const response = await fetch(getApiUrl("/api/user/"), {
                 method: "GET",
                 headers: {
+                    Accept: "application/json",
                     "Content-Type": "application/json",
                     "X-CSRFToken": getCsrfToken(),
                 },
@@ -23,15 +35,23 @@ const AuthProvider = ({ children }) => {
             });
 
             if (response.ok) {
-                const data = await response.json();
-                setUser(data);
-                setIsLoggedIn(true);
+                const data = await parseJsonIfPossible(response);
+                if (data) {
+                    setUser(data);
+                    setIsLoggedIn(true);
+                } else {
+                    setUser(null);
+                    setIsLoggedIn(false);
+                    console.warn("Non-JSON response received from /api/user/.");
+                }
             } else {
                 setUser(null);
                 setIsLoggedIn(false);
             }
         } catch (error) {
-            console.error("Error fetching current user:", error);
+            if (error?.name !== "AbortError") {
+                console.error("Error fetching current user:", error);
+            }
             setUser(null);
             setIsLoggedIn(false);
         } finally {
@@ -40,9 +60,10 @@ const AuthProvider = ({ children }) => {
     };
 
     const login = async (credentials) => {
-        const response = await fetch("/api/login/", {
+        const response = await fetch(getApiUrl("/api/login/"), {
             method: "POST",
             headers: {
+                Accept: "application/json",
                 "Content-Type": "application/json",
                 "X-CSRFToken": getCsrfToken(),
             },
@@ -60,9 +81,10 @@ const AuthProvider = ({ children }) => {
     };
 
     const logout = async () => {
-        const response = await fetch("/api/logout/", {
+        const response = await fetch(getApiUrl("/api/logout/"), {
             method: "POST",
             headers: {
+                Accept: "application/json",
                 "X-CSRFToken": getCsrfToken(),
             },
             credentials: "include",
@@ -78,9 +100,10 @@ const AuthProvider = ({ children }) => {
     };
 
     const register = async (userData) => {
-        const response = await fetch("/api/register/", {
+        const response = await fetch(getApiUrl("/api/register/"), {
             method: "POST",
             headers: {
+                Accept: "application/json",
                 "Content-Type": "application/json",
                 "X-CSRFToken": getCsrfToken(),
             },
