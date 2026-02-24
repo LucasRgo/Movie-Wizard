@@ -1,7 +1,7 @@
 import React from "react";
-import GenreMovies from "./GenreMovies";
-import HeroSection from "./HeroSection";
-import TopMovies from "./TopMovies";
+import GenreMovies from "./GenreMovies.jsx";
+import HeroSection from "./HeroSection.jsx";
+import TopMovies from "./TopMovies.jsx";
 
 const genreSections = [
     {

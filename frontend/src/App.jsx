@@ -1,17 +1,15 @@
-// src/App.js
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import MovieDetail from "./components/MovieRoute/movie_detail";
-import RegisterForm from "./components/registerForm";
-import LoginForm from "./components/loginForm";
+import MovieDetail from "./components/MovieRoute/movie_detail.jsx";
+import RegisterForm from "./components/registerForm.jsx";
+import LoginForm from "./components/loginForm.jsx";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useEffect, useState } from "react";
-import Index from "./components/IndexRoute/index";
-import Navbar from "./components/navbar";
-import Footer from "./components/footer";
-import WatchLater from "./components/userFunctions/watchlater";
-import RatedMovies from "./components/userFunctions/watched";
-import MagicMovies from "./components/magicComponents/fiveMovies";
 import React from "react";
+import Index from "./components/IndexRoute/index.jsx";
+import Navbar from "./components/navbar.jsx";
+import Footer from "./components/footer.jsx";
+import WatchLater from "./components/userFunctions/watchlater.jsx";
+import RatedMovies from "./components/userFunctions/watched.jsx";
+import MagicMovies from "./components/magicComponents/fiveMovies.jsx";
 import "./css/style.css";
 
 function App() {

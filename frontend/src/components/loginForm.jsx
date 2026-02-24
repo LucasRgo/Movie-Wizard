@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from './authContext';
+import { AuthContext } from './authContext.jsx';
 
 const LoginForm = () => {
   const { login } = useContext(AuthContext); // Access login function from context

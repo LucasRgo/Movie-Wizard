@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Directors from "./directors";
-import MoviePoster from "../IndexRoute/MoviePoster";
+import Directors from "./directors.jsx";
+import MoviePoster from "../IndexRoute/MoviePoster.jsx";
 
 function MagicMovies() {
     const [magicMovies, setMagicMovies] = useState([]);

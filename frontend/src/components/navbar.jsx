@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "./authContext";
-import Search from "./IndexRoute/search";
+import { AuthContext } from "./authContext.jsx";
+import Search from "./IndexRoute/search.jsx";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 

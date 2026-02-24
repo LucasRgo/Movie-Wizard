@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import MovieActions from "./movieActions";
-import RatingComponent from "./ratingComponent";
-import SimilarMovies from "./SimilarMovies";
-import { resolvePosterUrl } from "../IndexRoute/MoviePoster";
+import MovieActions from "./movieActions.jsx";
+import RatingComponent from "./ratingComponent.jsx";
+import SimilarMovies from "./SimilarMovies.jsx";
+import { resolvePosterUrl } from "../IndexRoute/MoviePoster.jsx";
 
 function MovieDetail() {
     const { movie_id: movieIdParam } = useParams();

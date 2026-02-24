@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { resolvePosterUrl } from "./MoviePoster";
+import { resolvePosterUrl } from "./MoviePoster.jsx";
 
 function Search({
     mode = "desktop",

@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { AuthContext } from './authContext';
+import { AuthContext } from './authContext.jsx';
 import { useNavigate } from 'react-router-dom';
 
 const RegisterForm = () => {

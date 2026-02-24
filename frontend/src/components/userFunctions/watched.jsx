@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { resolvePosterUrl } from "../IndexRoute/MoviePoster";
+import { resolvePosterUrl } from "../IndexRoute/MoviePoster.jsx";
 
 const ratingToStars = (rating) => {
     const value = Math.round(Number(rating || 0) / 2);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { resolvePosterUrl } from "../IndexRoute/MoviePoster";
+import { resolvePosterUrl } from "../IndexRoute/MoviePoster.jsx";
 
 function WatchLater() {
     const [movies, setMovies] = useState([]);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import MoviePoster from "./MoviePoster";
+import MoviePoster from "./MoviePoster.jsx";
 
 function GenreMovies({ genre, title }) {
     const [movies, setMovies] = useState([]);

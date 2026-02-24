@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import MoviePoster from "../IndexRoute/MoviePoster";
+import MoviePoster from "../IndexRoute/MoviePoster.jsx";
 
 function SimilarMovies({ movieId }) {
     const [movies, setMovies] = useState([]);

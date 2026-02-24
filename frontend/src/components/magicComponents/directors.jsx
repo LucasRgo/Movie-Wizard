@@ -1,5 +1,5 @@
 import React from "react";
-import MoviePoster from "../IndexRoute/MoviePoster";
+import MoviePoster from "../IndexRoute/MoviePoster.jsx";
 
 function Directors({ directorsData = [] }) {
     if (!directorsData.length) {
