@@ -10,11 +10,16 @@ UserModel = get_user_model()
 class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
-        fields = "__all__"
+        fields = ("username", "password")
+        extra_kwargs = {
+            "password": {"write_only": True},
+        }
 
-    def create(self, clean_data):
-        user_obj = UserModel.objects.create_user(username=clean_data['username'],
-            password=clean_data['password'])
+    def create(self, validated_data):
+        user_obj = UserModel.objects.create_user(
+            username=validated_data["username"],
+            password=validated_data["password"],
+        )
         user_obj.save()
         return user_obj
 
@@ -23,10 +28,12 @@ class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField()
 
     def check_user(self, clean_data):
-        user = authenticate(username=clean_data['username'],
-            password=clean_data['password'])
+        user = authenticate(
+            username=clean_data["username"],
+            password=clean_data["password"],
+        )
         if not user:
-            raise ValidationError('User not found')
+            raise ValidationError("User not found")
         return user
 
 class UserSerializer(serializers.Serializer):

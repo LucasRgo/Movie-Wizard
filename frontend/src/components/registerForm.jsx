@@ -11,12 +11,13 @@ const RegisterForm = () => {
 
   async function handleRegistration(e) {
     e.preventDefault();
+    setError('');
 
     try {
-      await register({ username, password });
+      await register({ username: username.trim(), password: password.trim() });
       navigate('/'); // Navigate to the homepage upon successful registration
     } catch (error) {
-      setError('Registration failed. Please try again.');
+      setError(error?.message || 'Registration failed. Please try again.');
       console.error("Registration error:", error);
     }
   }
@@ -47,6 +48,7 @@ const RegisterForm = () => {
                     id="username"
                     placeholder="Username"
                     value={username}
+                    required
                     onChange={(e) => setUsername(e.target.value)}
                   />
                 </div>
@@ -57,6 +59,7 @@ const RegisterForm = () => {
                     id="password"
                     placeholder="Password"
                     value={password}
+                    required
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>

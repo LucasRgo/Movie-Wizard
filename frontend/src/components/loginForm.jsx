@@ -6,15 +6,18 @@ const LoginForm = () => {
   const { login } = useContext(AuthContext); // Access login function from context
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   async function submitLogin(e) {
     e.preventDefault();
+    setError('');
 
     try {
-      await login({ username, password });
+      await login({ username: username.trim(), password: password.trim() });
       navigate('/');
     } catch (error) {
+      setError(error?.message || 'Invalid username or password.');
       console.error("Login error:", error);
     }
   }
@@ -33,6 +36,7 @@ const LoginForm = () => {
             <h3 className="mb-3" style={{ color: 'rgb(255, 255, 255)' }}>
               Welcome to the Movie Wizard!
             </h3>
+            {error && <p className="text-danger small mb-3">{error}</p>}
             <form onSubmit={submitLogin}>
               <div className="mb-3">
                 <input
@@ -40,6 +44,7 @@ const LoginForm = () => {
                   className="form-control mx-auto w-auto"
                   placeholder="Username"
                   value={username}
+                  required
                   onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
@@ -49,6 +54,7 @@ const LoginForm = () => {
                   className="form-control mx-auto w-auto"
                   placeholder="Password"
                   value={password}
+                  required
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>

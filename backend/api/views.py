@@ -67,16 +67,22 @@ class UserLogin(APIView):
     authentication_classes = (SessionAuthentication, )
 
     def post(self, request):
-        data = request.data
+        data = {
+            "username": request.data.get("username", "").strip(),
+            "password": request.data.get("password", "").strip(),
+        }
         assert validate_username(data)
         assert validate_password(data)
 
         serializer = UserLoginSerializer(data=data)
 
         if serializer.is_valid(raise_exception=True):
-            user = serializer.check_user(data)
+            user = serializer.check_user(serializer.validated_data)
             login(request, user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(
+                {"username": user.username, "email": user.email},
+                status=status.HTTP_200_OK,
+            )
 
 
 class UserLogout(APIView):
@@ -134,12 +140,31 @@ class UserRegister(APIView):
     permission_classes = (permissions.AllowAny, )
 
     def post(self, request):
-        clean_data = custom_validation(request.data)
+        clean_data = custom_validation(
+            {
+                "username": request.data.get("username", ""),
+                "password": request.data.get("password", ""),
+            }
+        )
         serializer = UserRegisterSerializer(data=clean_data)
         if serializer.is_valid(raise_exception=True):
-            user = serializer.create(clean_data)
+            user = serializer.save()
             if user:
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                authenticated_user = authenticate(
+                    request,
+                    username=clean_data["username"],
+                    password=clean_data["password"],
+                )
+                if authenticated_user is None:
+                    return Response(
+                        {"error": "Unable to authenticate new user."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                login(request, authenticated_user)
+                return Response(
+                    {"username": user.username, "email": user.email},
+                    status=status.HTTP_201_CREATED,
+                )
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

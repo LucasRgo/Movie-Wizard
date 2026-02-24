@@ -11,7 +11,10 @@ def custom_validation(data):
     
     if not username:
         raise ValidationError('Choose another username')
-    return data
+    return {
+        "username": username,
+        "password": password,
+    }
 
 
 def validate_email(data):

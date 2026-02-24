@@ -2,7 +2,16 @@ import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 
 const AuthContext = React.createContext();
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+
+const normalizeApiBaseUrl = (rawBaseUrl) => {
+    const value = (rawBaseUrl || "").trim().replace(/\/$/, "");
+    if (!value || value === "backend:") {
+        return "";
+    }
+    return value;
+};
+
+const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL);
 
 const getCsrfToken = () => Cookies.get("csrftoken") || "";
 const getApiUrl = (path) => `${API_BASE_URL}${path}`;
@@ -16,11 +25,37 @@ const parseJsonIfPossible = async (response) => {
     return response.json();
 };
 
+const buildErrorMessage = async (response, fallbackMessage) => {
+    const payload = await parseJsonIfPossible(response);
+    if (typeof payload === "string" && payload.trim()) {
+        return payload;
+    }
+    if (payload?.detail) {
+        return payload.detail;
+    }
+    if (Array.isArray(payload?.non_field_errors) && payload.non_field_errors.length > 0) {
+        return payload.non_field_errors[0];
+    }
+    if (typeof payload?.error === "string" && payload.error) {
+        return payload.error;
+    }
+    if (payload && typeof payload === "object") {
+        for (const value of Object.values(payload)) {
+            if (Array.isArray(value) && value.length > 0) {
+                return String(value[0]);
+            }
+            if (typeof value === "string" && value) {
+                return value;
+            }
+        }
+    }
+    return fallbackMessage;
+};
+
 const AuthProvider = ({ children }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState(null);
     const [isInitialized, setIsInitialized] = useState(false);
-    const [lastAction, setLastAction] = useState(null);
 
     const fetchCurrentUser = async () => {
         try {
@@ -28,8 +63,6 @@ const AuthProvider = ({ children }) => {
                 method: "GET",
                 headers: {
                     Accept: "application/json",
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": getCsrfToken(),
                 },
                 credentials: "include",
             });
@@ -73,10 +106,10 @@ const AuthProvider = ({ children }) => {
 
         if (!response.ok) {
             setIsLoggedIn(false);
-            throw new Error("Invalid username or password.");
+            throw new Error(await buildErrorMessage(response, "Invalid username or password."));
         }
 
-        setLastAction("login");
+        await fetchCurrentUser();
         return true;
     };
 
@@ -96,7 +129,6 @@ const AuthProvider = ({ children }) => {
 
         setUser(null);
         setIsLoggedIn(false);
-        setLastAction("logout");
     };
 
     const register = async (userData) => {
@@ -112,18 +144,14 @@ const AuthProvider = ({ children }) => {
         });
 
         if (!response.ok) {
-            throw new Error("Registration failed.");
+            throw new Error(await buildErrorMessage(response, "Registration failed."));
         }
 
-        setLastAction("register");
+        // Reuse the login flow so auth state is established consistently
+        // across environments where register auto-login may vary.
+        await login(userData);
         return true;
     };
-
-    useEffect(() => {
-        if (lastAction === "login" || lastAction === "register") {
-            fetchCurrentUser();
-        }
-    }, [lastAction]);
 
     useEffect(() => {
         if (!isInitialized) {
